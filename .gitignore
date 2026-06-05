@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.zip
+.vscode/
+
+# Lambda dependencies
+ingestion_lambda/requests/
+ingestion_lambda/urllib3/
+ingestion_lambda/certifi/
+ingestion_lambda/charset_normalizer/
+ingestion_lambda/idna/
+ingestion_lambda/*.dist-info/
+ingestion_lambda/bin/
+ingestion_lambda/*.pyd
