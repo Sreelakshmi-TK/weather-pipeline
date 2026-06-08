@@ -3,6 +3,9 @@ __pycache__/
 *.zip
 .vscode/
 
+.streamlit/
+.env
+
 # Lambda dependencies
 ingestion_lambda/requests/
 ingestion_lambda/urllib3/
