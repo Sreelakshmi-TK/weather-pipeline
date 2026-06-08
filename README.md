@@ -1,58 +1,54 @@
-# 🌦 Weather Analytics Pipeline
+# Real-Time Weather Data Pipeline with AWS, Snowflake, and Streamlit
 
-An end-to-end cloud-based weather analytics platform that collects real-time weather data, processes it through AWS services, stores historical data in Snowflake, and visualizes insights using Streamlit.
+## Project Overview
 
----
-
-## 📌 Project Overview
-
-This project automates the collection, storage, processing, and visualization of weather data for Kochi using a fully serverless architecture.
-
-The pipeline fetches weather information at scheduled intervals, stores raw and processed data in AWS, loads historical records into Snowflake, and provides interactive analytics through a Streamlit dashboard.
+This project implements a real-time weather data pipeline that collects weather information from the OpenWeather API, processes it using AWS services, stores raw data in Amazon S3, automatically ingests data into Snowflake using Snowpipe Auto-Ingest, and visualizes insights through a Streamlit dashboard.
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
-```text
-EventBridge
-    ↓
-Weather Ingestion Lambda
-    ↓
-DynamoDB
-    ↓
+OpenWeather API
+
+↓
+
+Amazon EventBridge (Scheduled Trigger - Every 15 Minutes)
+
+↓
+
+AWS Lambda (Weather Data Collection)
+
+↓
+
+Amazon DynamoDB
+
+↓
+
 DynamoDB Streams
-    ↓
-Weather Stream Processor Lambda
-    ↓
-Amazon S3
-    ↓
-Snowflake Stage
-    ↓
-Snowpipe
-    ↓
-WEATHER_DATA Table
-    ↓
+
+↓
+
+AWS Lambda (Data Transformation)
+
+↓
+
+Amazon S3 (JSON Storage)
+
+↓
+
+Snowpipe Auto-Ingest
+
+↓
+
+Snowflake Data Warehouse
+
+↓
+
 Streamlit Dashboard
-```
 
 ---
 
-## 🚀 Features
-
-* Automated weather data ingestion
-* Event-driven serverless architecture
-* DynamoDB stream processing
-* Historical weather data storage in S3
-* Automated Snowflake ingestion using Snowpipe
-* Real-time analytics dashboard
-* Temperature and humidity trend visualization
-* Weather condition distribution analysis
-* Auto-refreshing dashboard
-
----
-
-## 🛠 Technology Stack
+## Technologies Used
 
 ### AWS
 
@@ -61,12 +57,12 @@ Streamlit Dashboard
 * Amazon DynamoDB
 * DynamoDB Streams
 * Amazon S3
-* IAM
+* Amazon SQS (Snowflake-managed notification channel)
 
 ### Data Warehouse
 
 * Snowflake
-* Snowpipe
+* Snowpipe Auto-Ingest
 * External Stage
 * Storage Integration
 
@@ -76,156 +72,186 @@ Streamlit Dashboard
 * Plotly
 * Pandas
 
-### Language
+### Programming Language
 
 * Python
 
 ---
 
-## 📂 Project Structure
+## Data Flow
 
-```text
-weather-pipeline/
-│
-├── ingestion_lambda/
-│   ├── lambda_function.py
-│   └── requirements.txt
-│
-├── stream_processor/
-│   ├── lambda_function.py
-│   └── requirements.txt
-│
-├── dashboard/
-│   ├── app.py
-│   ├── snowflake_connection.py
-│   ├── requirements.txt
-│   └── .streamlit/
-│
-├── .gitignore
-└── README.md
-```
+### Step 1: Weather Collection
 
----
+EventBridge triggers a Lambda function every 15 minutes.
 
-## ⚙ Workflow
+The Lambda function:
 
-### 1. Data Ingestion
+* Calls the OpenWeather API
+* Fetches weather data for Kochi
+* Stores the latest weather record in DynamoDB
 
-EventBridge triggers the Weather Ingestion Lambda every 15 minutes.
+### Step 2: Stream Processing
 
-The Lambda:
+DynamoDB Streams capture newly inserted records.
 
-* Calls the weather API
-* Retrieves current weather data
-* Stores the weather record in DynamoDB
-
----
-
-### 2. Stream Processing
-
-DynamoDB Streams capture newly inserted weather records.
-
-The Stream Processor Lambda:
+A second Lambda function:
 
 * Reads stream events
-* Converts records to JSON
-* Stores files in Amazon S3
+* Converts records into JSON format
+* Stores JSON files in Amazon S3
+
+### Step 3: Snowflake Ingestion
+
+Snowflake Storage Integration provides secure access to S3.
+
+An External Stage references the S3 bucket.
+
+Snowpipe is configured with:
+
+AUTO_INGEST = TRUE
+
+When a new JSON file arrives in S3:
+
+* S3 sends an event notification
+* Snowflake-managed SQS receives the notification
+* Snowpipe automatically loads the file into Snowflake
+
+
+### Step 4: Analytics & Visualization
+
+A Streamlit dashboard connects to Snowflake and displays:
+
+* Latest Weather Information
+* Temperature Trends
+* Humidity Trends
+* Historical Weather Records
+* Summary Statistics
 
 ---
 
-### 3. Snowflake Ingestion
+## Streamlit Dashboard
 
-Snowflake:
+The Streamlit dashboard provides real-time visibility into weather data stored in Snowflake.
 
-* Connects to S3 using Storage Integration
-* Reads weather JSON files through an External Stage
-* Loads records automatically using Snowpipe
+### Dashboard Features
+
+#### Current Weather Overview
+
+Displays the most recent weather observation including:
+
+* City
+* Temperature
+* Humidity
+* Weather Condition
+* Timestamp
+
+#### Temperature Trend Analysis
+
+Interactive line chart showing temperature variations over time.
+
+#### Humidity Trend Analysis
+
+Interactive line chart visualizing humidity fluctuations.
+
+#### Historical Weather Records
+
+Tabular view of weather records retrieved from Snowflake.
+
+#### Summary Statistics
+
+Displays:
+
+* Average Temperature
+* Average Humidity
+* Minimum Temperature
+* Maximum Temperature
+* Total Records Processed
+
+### Dashboard Workflow
+
+Snowflake → Streamlit → Interactive Visualizations
+
+The dashboard establishes a secure connection to Snowflake, retrieves weather data using SQL queries, processes the data using Pandas, and generates interactive visualizations for monitoring weather trends in near real-time.
+
+### Dashboard Technologies
+
+* Streamlit
+* Snowflake Connector for Python
+* Pandas
+* Plotly
+
+### Dashboard Screenshot
+
+Add dashboard screenshots in the `/screenshots` folder and reference them below:
+
+![Dashboard Overview](screenshots/dashboard-overview.png)
+
+![Temperature Analysis](screenshots/temperature-analysis.png)
+
+![Humidity Analysis](screenshots/humidity-analysis.png)
+
+
+## Snowflake Components
+
+### Database
+
+WEATHER_DB
+
+### Schema
+
+RAW
+
+### Table
+
+WEATHER_DATA
+
+### Storage Integration
+
+S3_WEATHER_INTEGRATION
+
+### External Stage
+
+WEATHER_S3_STAGE
+
+### Snowpipe
+
+WEATHER_PIPE
+
+Configured using:
+
+AUTO_INGEST = TRUE
 
 ---
 
-### 4. Analytics Dashboard
+## Key Features
 
-Streamlit connects to Snowflake and displays:
-
-* Latest temperature
-* Latest humidity
-* Current weather condition
-* Historical weather records
-* Temperature trends
-* Humidity trends
-* Weather distribution analytics
+* Fully automated weather data pipeline
+* Near real-time ingestion into Snowflake
+* Event-driven architecture
+* Automated Snowpipe loading
+* Cloud-native implementation
+* Interactive Streamlit dashboard
+* End-to-end AWS integration
 
 ---
 
-## 📊 Dashboard Visualizations
+## Verification Queries
 
-### KPI Cards
+```sql
+SELECT COUNT(*) FROM WEATHER_DATA;
 
-* Current Temperature
-* Current Humidity
-* Current Weather
-* Total Records
+SELECT MAX(TIMESTAMP) FROM WEATHER_DATA;
 
-### Trend Analysis
+SELECT SYSTEM$PIPE_STATUS('WEATHER_PIPE');
 
-* Temperature Over Time
-* Humidity Over Time
-
-### Distribution Analysis
-
-* Weather Condition Distribution
-
-### Data Table
-
-* Latest Weather Records
-
----
-
-## 🔒 Security
-
-Sensitive credentials are not stored in source code.
-
-The dashboard uses:
-
-* Streamlit Secrets
-* Git Ignore Rules
-* IAM Roles and Policies
-* Snowflake Storage Integration
-
----
-
-## ▶ Running the Dashboard
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
+SELECT *
+FROM WEATHER_DATA
+ORDER BY TIMESTAMP DESC
+LIMIT 10;
 ```
 
-Run Streamlit:
+## Project Outcome
 
-```bash
-streamlit run app.py
-```
+Successfully implemented a real-time weather data engineering pipeline using AWS, Snowflake, and Streamlit.
 
----
-
-## 📈 Future Enhancements
-
-* Multi-city weather monitoring
-* Forecast analytics
-* Weather anomaly detection
-* Automated alert notifications
-* Machine learning-based weather prediction
-* Docker deployment
-* CI/CD pipeline implementation
-
----
-
-## 👩‍💻 Author
-
-Sreelakshmi T K
-
-B.Tech Artificial Intelligence and Data Science
-
-Passionate about Data Engineering, Cloud Computing, Machine Learning, and Analytics.
+The system automatically collects, processes, stores, ingests, and visualizes weather data without manual intervention.
