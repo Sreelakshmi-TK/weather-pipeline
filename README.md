@@ -5,8 +5,13 @@
 This project implements a real-time weather data pipeline that collects weather information from the OpenWeather API, processes it using AWS services, stores raw data in Amazon S3, automatically ingests data into Snowflake using Snowpipe Auto-Ingest, and visualizes insights through a Streamlit dashboard.
 
 ---
-
 ## Architecture
+
+The following diagram illustrates the end-to-end weather data pipeline:
+
+![Weather Pipeline Architecture](screenshots/architecture.png)
+
+### Workflow
 
 OpenWeather API
 
@@ -182,7 +187,7 @@ The dashboard establishes a secure connection to Snowflake, retrieves weather da
 
 ### Dashboard Screenshot
 
-Add dashboard screenshots in the `/screenshots` folder and reference them below:
+
 
 ![Dashboard Overview](screenshots/dashboard-overview.png)
 
